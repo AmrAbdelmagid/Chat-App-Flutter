@@ -1,6 +1,7 @@
+import 'package:chat_app/screens/chat_screen.dart';
 import 'package:chat_app/screens/rounded_button.dart';
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constants.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,6 +12,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
+  final _auth = FirebaseAuth.instance;
+  String email;
+  String password;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,8 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextField(
               onChanged: (value) {
-                //Do something with the user input.
+                email = value;
               },
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.emailAddress,
               decoration: kInputDecorationTextFieldStyle.copyWith(
                 hintText: 'Enter Your Email',
                 enabledBorder: OutlineInputBorder().copyWith(
@@ -48,8 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 8.0,
             ),
             TextField(
+              textAlign: TextAlign.center,
+              obscureText: true,
               onChanged: (value) {
-                //Do something with the user input.
+                password = value;
               },
               decoration: kInputDecorationTextFieldStyle.copyWith(
                 hintText: 'Enter Your Password',
@@ -66,7 +76,15 @@ class _LoginScreenState extends State<LoginScreen> {
             RoundedButton(
               color: Colors.lightBlueAccent,
               text: 'Log In',
-              onPressed: () {},
+              onPressed: () async{
+                try{
+                final registeredUser = await _auth.signInWithEmailAndPassword(email: email, password: password);
+                if (registeredUser != null) {
+                  Navigator.pushNamed(context, ChatScreen.id);
+                }} catch(e){
+                  print(e);
+                }
+              },
             ),
           ],
         ),
