@@ -1,4 +1,4 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +11,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final _firestore = FirebaseFirestore.instance;
+  String message;
   final _auth = FirebaseAuth.instance;
   User loggedInUser;
 
@@ -32,6 +34,14 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void messagesStream() async{
+    await for(var snapshot in _firestore.collection('messages').snapshots()){
+      for (var message in snapshot.docs){
+        print(message.data());
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +51,9 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                //Implement logout functionality
+                messagesStream();
+                // _auth.signOut();
+                // Navigator.pop(context);
               }),
         ],
         title: Text('⚡️Chat'),
@@ -60,14 +72,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        //Do something with the user input.
+                        message = value;
                       },
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   FlatButton(
                     onPressed: () {
-                      //Implement send functionality.
+                      _firestore.collection('messages').add({
+                        'text' : message,
+                        'sender' : loggedInUser.email,
+                      });
                     },
                     child: Text(
                       'Send',
